@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <maps>
+        <route id="kma" value="https://nmsc.kma.go.kr/" />
+    </maps>
+</configuration>
