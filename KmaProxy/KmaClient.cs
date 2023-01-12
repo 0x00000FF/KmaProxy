@@ -1,6 +1,7 @@
 using System.Net;
 using System.Xml;
 using System.Xml.Serialization;
+using KmaProxy.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KmaProxy;
@@ -15,33 +16,17 @@ public class KmaClient
 
     public KmaClient()
     {
-        LoadConfiguration();
-
         _cookieContainer = new();
         
         _handler = new() { CookieContainer = _cookieContainer};
         _client = new(_handler);
     }
 
-    private void LoadConfiguration()
+    public void Init(Configuration config)
     {
-        var contents = File.ReadAllText("configuration.xml");
-        
-        var document = new XmlDocument();
-        document.LoadXml(contents);
-
-        var node = document.SelectSingleNode("//maps");
-        if (node is not null)
+        foreach (var route in config.Maps.Route)
         {
-            foreach (XmlNode kvset in node.ChildNodes)
-            {
-                var id = kvset.Attributes?["id"]?.Value;
-                var val = kvset.Attributes?["value"]?.Value;
-
-                if (id is null || val is null) continue;
-                
-                _routingMap.Add(id, val);
-            }
+            _routingMap.Add(route.Id, route.Value);
         }
     }
 
