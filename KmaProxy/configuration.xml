@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
+    <static href="/statics" />
+    <tls enabled="false" port="5000">
+        <cert href="" />
+        <key href="" />
+    </tls>
     <maps>
         <route id="kma" value="https://nmsc.kma.go.kr/" />
     </maps>
