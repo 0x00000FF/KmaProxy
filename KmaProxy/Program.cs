@@ -43,6 +43,11 @@ if (config.Tls.Enabled)
 }
 else
 {
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Listen(IPAddress.Any, config.Tls.Port);
+    });
+    
     app = builder.Build();
 }
 
