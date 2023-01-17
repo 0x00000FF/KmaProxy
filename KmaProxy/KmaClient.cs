@@ -68,12 +68,13 @@ public class KmaClient
 
         if (_cacheList.ContainsKey(url))
         {
-            var id = _cacheList[url];
-            var cachedPath = $"cache/{id.Item1}";
+            var cacheInfo = _cacheList[url];
+            var cachedPath = $"cache/{cacheInfo.Item1}";
             
-            if (!File.Exists(cachedPath))
+            if (!File.Exists(cachedPath) || DateTime.Now > cacheInfo.Item2)
             {
                 _cacheList.Remove(url);
+                return await ProxyGetHandler(path);
             }
 
             return File.OpenRead(cachedPath);
