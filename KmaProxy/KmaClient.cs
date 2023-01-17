@@ -9,6 +9,7 @@ namespace KmaProxy;
 public class KmaClient
 {
     private Dictionary<string, string> _routingMap = new();
+    private Dictionary<string, Tuple<Guid, DateTimeOffset>> _cacheList = new();
 
     private CookieContainer _cookieContainer;
     private HttpClient _client;
@@ -24,6 +25,9 @@ public class KmaClient
 
     public void Init(Configuration config)
     {
+        if (!Directory.Exists("cache"))
+            Directory.CreateDirectory("cache");
+        
         foreach (var route in config.Maps.Route)
         {
             _routingMap.Add(route.Id, route.Value);
@@ -44,12 +48,55 @@ public class KmaClient
 
         return _routingMap[id] + remainPath;
     }
-    
-    public async Task<HttpContent> ProxyGetHandler(string path)
-    {
-        var url = BuildUrl(path);
-        var result = await _client.GetAsync(url);
 
-        return result.Content;
+    public void CacheContent(string url, int maxAge, Stream stream)
+    {
+        var cacheId = Guid.NewGuid();
+        var cacheExpires = DateTime.Now.AddSeconds(maxAge);
+        
+        _cacheList.Add(url, new (cacheId, cacheExpires) );
+
+        using var cacheFile = File.Create($"cache/{cacheId}");
+        
+        stream.CopyTo(cacheFile);
+        stream.Seek(0, SeekOrigin.Begin);
+    }
+    
+    public async Task<Stream> ProxyGetHandler(string path)
+    {
+        var url = BuildUrl(path) ?? "";
+
+        if (_cacheList.ContainsKey(url))
+        {
+            var id = _cacheList[url];
+            var cachedPath = $"cache/{id.Item1}";
+            
+            if (!File.Exists(cachedPath))
+            {
+                _cacheList.Remove(url);
+            }
+
+            return File.OpenRead(cachedPath);
+        }
+        else
+        {
+            var result = await _client.GetAsync(url);
+            var content = result.Content;
+            var stream = await content.ReadAsStreamAsync();
+            
+            if (result.Headers.Contains("Cache-Control"))
+            {
+                var maxAgeValue = result.Headers.GetValues("Cache-Control")
+                    .FirstOrDefault(h => h.Contains("max-age"));
+                var maxAge = maxAgeValue?.Split("=").Last();
+
+                if (int.TryParse(maxAge, out var maxAgeSecs))
+                {
+                    CacheContent(url, maxAgeSecs, stream);
+                }
+            }
+
+            return stream;
+        }
     }
 }
