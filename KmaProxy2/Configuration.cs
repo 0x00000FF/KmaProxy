@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace KmaProxy.Models;
+namespace KmaProxy2;
 
 [XmlRoot(ElementName="static")]
 public class Static { 

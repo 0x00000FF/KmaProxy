@@ -7,5 +7,6 @@
     </tls>
     <maps>
         <route id="kma" value="https://nmsc.kma.go.kr/" />
+        <route id="naver" value="https://www.naver.com/" />
     </maps>
 </configuration>
