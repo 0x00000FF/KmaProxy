@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <static href="/statics" />
+    <static href="statics" />
     <tls enabled="false" port="23470">
         <cert href="" />
         <key href="" />
