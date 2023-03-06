@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Runtime.InteropServices.ComTypes;
@@ -27,7 +28,14 @@ public static class Program
 
         if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
         {
-            throw new PrivilegeNotHeldException();
+            var exeName = Process.GetCurrentProcess().MainModule?.FileName;
+            _ = Process.Start(new ProcessStartInfo
+            {
+                Verb = "runas",
+                FileName = exeName,
+            });
+
+            Environment.Exit(0);
         }
     }
     private static async Task Main(string[] args)
