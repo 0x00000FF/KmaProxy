@@ -2,7 +2,9 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Runtime.InteropServices.ComTypes;
+using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,9 +14,29 @@ public static class Program
 {
     private static Configuration? configuration;
     private static X509Certificate? certificate;
-    
+
+    private static void ElevatePrivileges()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new NotSupportedException();
+        }
+        
+        var identity = WindowsIdentity.GetCurrent();
+        var principal = new WindowsPrincipal(identity);
+
+        if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+        {
+            throw new PrivilegeNotHeldException();
+        }
+    }
     private static async Task Main(string[] args)
     {
+        if (OperatingSystem.IsWindows())
+        {
+            ElevatePrivileges();
+        }
+        
         configuration = Configuration.Load();
 
         if (configuration is null)
