@@ -32,7 +32,7 @@ public static class Program
             _ = Process.Start(new ProcessStartInfo
             {
                 Verb = "runas",
-                FileName = exeName,
+                FileName = exeName
             });
 
             Environment.Exit(0);
@@ -85,7 +85,7 @@ public static class Program
     {
         var clientMessage = CreateClientMessage(context.Request);
 
-        if (clientMessage.PayloadStream == Stream.Null)
+        if (clientMessage.BaseAddress == "static")
         {
             await ResponseWithStatic(context, clientMessage);
         }
@@ -166,6 +166,7 @@ public static class Program
 
         if (configuration?.Static.Href == reqName && request.HttpMethod == "GET")
         {
+            message.BaseAddress = "static";
             message.Endpoint = reqName + '/' + urlFrags[2];
             message.PayloadStream = Stream.Null;
 
